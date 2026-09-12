@@ -1,54 +1,20 @@
-from contextlib import asynccontextmanager
 from typing import Annotated, TypeAlias
 
-from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .database import engine, get_session, init_db
+from .database import get_session
 from .schemas import MessageCreate, MessageResponse
 
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    init_db()
-    yield
-
-
-app = FastAPI(title="Signal Desk Message Service", lifespan=lifespan)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:4200", "http://127.0.0.1:4200"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
-)
+router = APIRouter(prefix="/api", tags=["messages"])
 
 SessionDependency: TypeAlias = Annotated[Session, Depends(get_session)]
 
 
-@app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok"}
-
-
-@app.get("/ready")
-def ready() -> dict[str, str]:
-    try:
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
-    except SQLAlchemyError as error:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database is unavailable",
-        ) from error
-    return {"status": "ready"}
-
-
-@app.post(
-    "/api/messages",
+@router.post(
+    "/messages",
     response_model=MessageResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -74,7 +40,7 @@ def create_message(payload: MessageCreate, session: SessionDependency) -> Messag
     return MessageResponse.model_validate(result)
 
 
-@app.get("/api/messages", response_model=list[MessageResponse])
+@router.get("/messages", response_model=list[MessageResponse])
 def get_messages(session: SessionDependency) -> list[MessageResponse]:
     try:
         rows = session.execute(
