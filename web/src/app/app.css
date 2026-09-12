@@ -1,0 +1,64 @@
+:host {
+	display: block;
+	min-height: 100dvh;
+	color: #17201e;
+	background: #e8ece5;
+	font-family: Georgia, 'Times New Roman', serif;
+}
+
+.desk-shell {
+	min-height: 100dvh;
+	padding: 4rem 1.25rem;
+	background: radial-gradient(circle at 8% 0%, #f8f4e9 0, transparent 34rem), #e8ece5;
+}
+
+.desk-panel {
+	width: min(100%, 58rem);
+	margin: 0 auto;
+	padding: clamp(1.5rem, 5vw, 4rem);
+	border: 1px solid #b8c3b8;
+	background: rgba(250, 249, 244, 0.82);
+	box-shadow: 14px 14px 0 #cbd5c8;
+}
+
+.desk-header, .stream-heading, .composer-row, .message-meta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.eyebrow, .status-mark, .message-meta, .stream-heading span {
+	color: #567066;
+	font: 700 0.72rem/1.2 'Courier New', monospace;
+	letter-spacing: 0.08rem;
+}
+
+h1, h2, p { margin: 0; }
+h1 { margin-top: 0.6rem; font-size: clamp(2.8rem, 8vw, 5rem); line-height: 0.95; font-weight: 400; }
+h2 { font-size: 1.35rem; font-weight: 400; }
+.intro { max-width: 28rem; margin-top: 1rem; color: #61716a; font-size: 1.1rem; }
+.status-mark { color: #26734b; white-space: nowrap; }
+.composer { margin-top: 4rem; padding: 1.25rem 0 2rem; border-top: 1px solid #b8c3b8; border-bottom: 1px solid #b8c3b8; }
+.composer label { display: block; margin-bottom: 0.7rem; font: 700 0.76rem/1.2 'Courier New', monospace; text-transform: uppercase; color: #567066; }
+input { min-width: 0; flex: 1; padding: 0.9rem 0; border: 0; border-bottom: 2px solid #789083; outline: 0; background: transparent; color: inherit; font: 1.15rem Georgia, 'Times New Roman', serif; }
+input:focus { border-color: #26734b; }
+button { flex: 0 0 auto; padding: 0.85rem 1.1rem; border: 0; background: #245b46; color: #fff; cursor: pointer; font: 700 0.78rem 'Courier New', monospace; }
+button:hover:not(:disabled) { background: #173f30; }
+button:disabled { cursor: not-allowed; opacity: 0.45; }
+.error { margin-top: 1rem; padding: 0.8rem 1rem; border-left: 3px solid #b63d35; background: #f9e7e2; color: #8c2c27; }
+.message-stream { margin-top: 2rem; }
+.stream-heading { padding-bottom: 0.8rem; border-bottom: 2px solid #245b46; }
+.state { padding: 2.5rem 0; color: #718078; }
+.messages { display: grid; gap: 0.8rem; padding: 1rem 0 0; margin: 0; list-style: none; }
+.message-item { padding: 1rem 0; border-bottom: 1px solid #d0d8ce; }
+.message-item p { margin-top: 0.7rem; font-size: 1.12rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.message-meta time { color: #7c8a82; font-weight: 400; letter-spacing: 0; }
+
+@media (max-width: 560px) {
+	.desk-shell { padding: 1rem 0.75rem; }
+	.desk-panel { box-shadow: 7px 7px 0 #cbd5c8; }
+	.desk-header { align-items: flex-start; flex-direction: column; }
+	.composer-row { align-items: stretch; flex-direction: column; }
+	button { width: 100%; }
+}

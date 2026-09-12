@@ -1,0 +1,61 @@
+<main class="desk-shell">
+  <section class="desk-panel" aria-labelledby="page-title">
+    <header class="desk-header">
+      <div>
+        <p class="eyebrow">SIGNAL DESK / MESSAGE SERVICE</p>
+        <h1 id="page-title">Messages</h1>
+        <p class="intro">A quiet place to send a signal and keep the thread.</p>
+      </div>
+      <div class="status-mark" aria-label="Message desk online">● ONLINE</div>
+    </header>
+
+    <form class="composer" (ngSubmit)="submitMessage()">
+      <label for="message">Write a message</label>
+      <div class="composer-row">
+        <input
+          id="message"
+          name="message"
+          type="text"
+          maxlength="5000"
+          placeholder="What needs to be said?"
+          [ngModel]="messageText()"
+          (ngModelChange)="messageText.set($event)"
+          [disabled]="submitting()"
+          autocomplete="off"
+        />
+        <button type="submit" [disabled]="submitting() || !messageText().trim()">
+          {{ submitting() ? 'Sending...' : 'Send message' }}
+        </button>
+      </div>
+    </form>
+
+    @if (error()) {
+      <div class="error" role="alert">{{ error() }}</div>
+    }
+
+    <section class="message-stream" aria-labelledby="stream-title">
+      <div class="stream-heading">
+        <h2 id="stream-title">Message stream</h2>
+        <span>{{ messages().length }} total</span>
+      </div>
+
+      @if (loading()) {
+        <p class="state">Loading the message stream...</p>
+      } @else if (messages().length === 0) {
+        <p class="state">No messages yet. Start the conversation above.</p>
+      } @else {
+        <ol class="messages">
+          @for (message of messages(); track message.id) {
+            <li class="message-item">
+              <div class="message-meta">
+                <span>#{{ message.id }}</span>
+                <time [dateTime]="message.created_at">{{ message.created_at | date: 'MMM d, y, h:mm a' }}</time>
+              </div>
+              <p>{{ message.text }}</p>
+            </li>
+          }
+        </ol>
+      }
+    </section>
+  </section>
+</main>
