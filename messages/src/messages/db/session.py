@@ -1,8 +1,10 @@
 from collections.abc import Generator
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
+
+from messages.models import Base
 
 from .config import DATABASE_URL
 
@@ -11,19 +13,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 
 def init_db() -> None:
-    with engine.begin() as connection:
-        connection.execute(
-            text(
-                """
-                CREATE TABLE IF NOT EXISTS messages (
-                    id SERIAL PRIMARY KEY,
-                    text TEXT NOT NULL CHECK (length(trim(text)) > 0),
-                    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    status VARCHAR(32) NOT NULL DEFAULT 'sent'
-                )
-                """
-            )
-        )
+    Base.metadata.create_all(bind=engine)
 
 
 def get_session() -> Generator[Session, None, None]:

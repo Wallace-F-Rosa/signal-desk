@@ -1,11 +1,12 @@
 from typing import Annotated, TypeAlias
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import text
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from .db import get_session
+from .models import Message
 from .schemas import MessageCreate, MessageResponse
 
 router = APIRouter(prefix="/api", tags=["messages"])
@@ -19,39 +20,26 @@ SessionDependency: TypeAlias = Annotated[Session, Depends(get_session)]
     status_code=status.HTTP_201_CREATED,
 )
 def create_message(payload: MessageCreate, session: SessionDependency) -> MessageResponse:
+    message = Message(text=payload.text)
     try:
-        result = session.execute(
-            text(
-                """
-                INSERT INTO messages (text)
-                VALUES (:text)
-                RETURNING id, text, created_at, status
-                """
-            ),
-            {"text": payload.text},
-        ).mappings().one()
+        session.add(message)
         session.commit()
+        session.refresh(message)
     except SQLAlchemyError as error:
         session.rollback()
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to save message",
         ) from error
-    return MessageResponse.model_validate(result)
+    return MessageResponse.model_validate(message)
 
 
 @router.get("/messages", response_model=list[MessageResponse])
 def get_messages(session: SessionDependency) -> list[MessageResponse]:
     try:
         rows = session.execute(
-            text(
-                """
-                SELECT id, text, created_at, status
-                FROM messages
-                ORDER BY created_at ASC, id ASC
-                """
-            )
-        ).mappings().all()
+            select(Message).order_by(Message.created_at.asc(), Message.id.asc())
+        ).scalars().all()
     except SQLAlchemyError as error:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
