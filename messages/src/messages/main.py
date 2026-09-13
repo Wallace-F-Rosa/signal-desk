@@ -5,7 +5,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .database import get_session
+from .db import get_session
 from .schemas import MessageCreate, MessageResponse
 
 router = APIRouter(prefix="/api", tags=["messages"])
