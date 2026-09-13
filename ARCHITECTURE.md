@@ -1,17 +1,20 @@
-# Signal Desk architecture (v0)
+# Signal Desk architecture
 
-![Current architecture for messages](docs/message%20rest.png)
+```text
+Browser -> Angular frontend -> FastAPI messages API -> SQLAlchemy ORM -> PostgreSQL
+```
 
-## Web interface (Angular)
-Web interface responsabilities will be :
-- User web interface. Angular frontend
-- Should have a button called messages. On clicking button should ask open an interface with an input asking which message user wants to send.
-- Only communicates with HTTPs to Message Service
-- Transient data. Will not communicate directly with Postgres database to avoid leaking credentials and other exploits that could hit database directly with any amount of messages and no control over traffic.
+## Responsibilities
 
+- Angular frontend: user interface and transient browser state
+- FastAPI service: API contract and business logic
+- SQLAlchemy ORM: database-access layer
+- PostgreSQL: durable storage
+- Alembic: schema versioning under messages/migrations
 
-## Message Service (FASTApi)
-- Exposes REST API to handle simple messages only one attribute POST /messages
-- Should persist any message sent to database
-- Should be able to retrieve a list of previous sent messages and return GET /messages
-- Persistance should be done using Postgres
+## Boundaries
+
+- The browser does not connect to PostgreSQL.
+- The FastAPI service owns validation and persistence logic.
+- Database schema changes are managed through Alembic migration files, not ad hoc runtime SQL.
+- Pydantic models validate request/response payloads; SQLAlchemy models define the database schema.
