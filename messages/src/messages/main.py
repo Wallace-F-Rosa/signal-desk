@@ -20,13 +20,13 @@ SessionDependency: TypeAlias = Annotated[Session, Depends(get_session)]
     status_code=status.HTTP_201_CREATED,
 )
 def create_message(payload: MessageCreate, session: SessionDependency) -> MessageResponse:
-    message = Message(text=payload.text)
     try:
-        session.add(message)
-        session.commit()
-        session.refresh(message)
+        with session.begin():
+            message = Message(text=payload.text)
+            session.add(message)
+            session.flush()
+            session.refresh(message)
     except SQLAlchemyError as error:
-        session.rollback()
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Unable to save message",
