@@ -1,4 +1,17 @@
 services:
+  signal-desk-messages:
+    image: signal-desk/messages
+    container_name: signal-desk-messages
+    build: ./messages
+    ports:
+      - "8080:8080"
+    volumes:
+      - signal-desk-messages:/var/local/signal-desk/messages
+    networks:
+      - signal-desk-network
+    depends_on:
+      postgres:
+        condition: service_healthy
   postgres:
     image: postgres:16-alpine
     container_name: signal-desk-postgres
@@ -24,3 +37,4 @@ networks:
 
 volumes:
   postgres_data:
+  signal-desk-messages:
