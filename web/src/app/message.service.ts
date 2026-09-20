@@ -13,10 +13,11 @@ export interface CreateMessage {
   text: string;
 }
 
+
 @Injectable({ providedIn: 'root' })
 export class MessageService {
   private readonly http = inject(HttpClient);
-  private readonly endpoint = 'http://localhost:8000/api/messages';
+  private readonly endpoint = '/api/messages';
 
   getMessages(): Observable<Message[]> {
     return this.http.get<Message[]>(this.endpoint);
