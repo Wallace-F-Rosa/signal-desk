@@ -13,12 +13,16 @@ Browser -> Angular frontend -> FastAPI messages API -> SQLAlchemy ORM -> Postgre
 - Alembic: schema versioning under messages/migrations
 
 ## Rules
-
-- Keep scope to the current milestone.
-- Prefer the smallest relevant fix and validation.
-- Do not add extra architecture or deployment patterns unless asked.
-- Treat Alembic migration files as the source of truth for schema changes.
-- Keep Pydantic models for API validation only; use SQLAlchemy models for database mapping.
+ 
+ - Keep scope to the current milestone.
+ - Prefer the smallest relevant fix and validation.
+ - Do not add extra architecture or deployment patterns unless asked.
+ - Treat Alembic migration files as the source of truth for schema changes.
+ - Keep Pydantic models for API validation only; use SQLAlchemy models for database mapping.
+ - **Optimize token usage**:
+   - Restrict `grep` and `read` operations to source directories (e.g., `src/`).
+   - Never scan or read build artifacts, `node_modules`, `.venv`, `.angular`, or `dist/` folders.
+   - Use `grep -n` to find line numbers and read specific offsets/limits instead of whole files when possible.
 
 ## Validation
 
