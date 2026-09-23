@@ -1,4 +1,4 @@
-from messages.models import Base, Message
+from database.models import Base, Message
 
 
 def test_message_orm_contract_matches_database_design():

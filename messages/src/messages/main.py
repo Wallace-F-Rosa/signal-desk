@@ -1,48 +1,47 @@
 from typing import Annotated, TypeAlias
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from .db import get_session
-from .models import Message
+from database import get_session
 from .schemas import MessageCreate, MessageResponse
+from .service import MessageService
 
 router = APIRouter(prefix="/api", tags=["messages"])
 
 SessionDependency: TypeAlias = Annotated[Session, Depends(get_session)]
 
+def get_message_service() -> MessageService:
+    return MessageService()
 
 @router.post(
     "/messages",
     response_model=MessageResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def create_message(payload: MessageCreate, session: SessionDependency) -> MessageResponse:
+def create_message(
+    payload: MessageCreate, 
+    session: SessionDependency, 
+    service: MessageService = Depends(get_message_service)
+) -> MessageResponse:
     try:
-        with session.begin():
-            message = Message(text=payload.text)
-            session.add(message)
-            session.flush()
-            session.refresh(message)
+        return service.create_message(session, payload)
     except SQLAlchemyError as error:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to save message",
         ) from error
-    return MessageResponse.model_validate(message)
-
 
 @router.get("/messages", response_model=list[MessageResponse])
-def get_messages(session: SessionDependency) -> list[MessageResponse]:
+def get_messages(
+    session: SessionDependency, 
+    service: MessageService = Depends(get_message_service)
+) -> list[MessageResponse]:
     try:
-        rows = session.execute(
-            select(Message).order_by(Message.created_at.asc(), Message.id.asc())
-        ).scalars().all()
+        return service.get_messages(session)
     except SQLAlchemyError as error:
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to load messages",
         ) from error
-    return [MessageResponse.model_validate(row) for row in rows]

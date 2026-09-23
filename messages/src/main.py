@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-from messages.db import engine, init_db
+from database import engine, init_db
 from messages.main import router as messages_router
 
 @asynccontextmanager
