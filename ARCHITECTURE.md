@@ -8,8 +8,8 @@
  
  - Nginx: Reverse proxy, static asset serving, and API routing
  - Angular frontend: user interface and transient browser state
- - FastAPI service: API contract and business logic
- - SQLAlchemy ORM: database-access layer
+ - FastAPI service: API contract and business logic (separated into controllers and services)
+ - SQLAlchemy ORM: database-access layer (centralized in a dedicated database package)
  - PostgreSQL: durable storage
  - Alembic: schema versioning under messages/migrations
  
