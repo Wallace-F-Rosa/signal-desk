@@ -32,21 +32,28 @@ signal-desk/
 │   ├── angular.json
 │   └── package.json
 ├── messages/            # FastAPI message service
-│   ├── main.py         # API endpoints
-│   ├── database.py     # Database configuration
-│   ├── schemas.py      # Pydantic models
-│   ├── requirements.txt
-│   └── run.py          # Server runner
+│   ├── src/             # Source code
+│   │   ├── main.py       # FastAPI application entry
+│   │   ├── database/     # Database infrastructure, models & sessions
+│   │   └── messages/     # Message-specific business logic
+│   │       ├── main.py    # API Controllers (Routers)
+│   │       ├── service.py # Business Logic & Database transactions
+│   │       └── schemas.py  # Pydantic models
+│   ├── migrations/      # Alembic schema versions
+│   ├── pyproject.toml   # Project dependencies & configuration
+│   └── Dockerfile       # Containerization
 └── docs/               # Documentation
-
 ```
 
 ## Current scope (v0)
 
 The first communication path is a synchronous REST request:
 
-```text
-Browser -> Angular -> HTTP/REST -> FastAPI -> PostgreSQL
+```mermaid
+graph LR
+    Browser --> Angular
+    Angular -- HTTP/REST --> FastAPI
+    FastAPI --> PostgreSQL
 ```
 
 ### v0 Implementation
@@ -63,9 +70,11 @@ Browser -> Angular -> HTTP/REST -> FastAPI -> PostgreSQL
   - `POST /api/messages` - Create a new message
   - `GET /api/messages` - Retrieve all messages
   - `GET /health` - Health check
-- PostgreSQL database persistence
-- CORS middleware for web interface communication
-- Automatic table creation on startup
+- **Service-Oriented Architecture**: Separation of controllers (HTTP logic) and services (DB transactions).
+- **Centralized Database Package**: Shared models and session management.
+- PostgreSQL database persistence.
+- CORS middleware for web interface communication.
+- Alembic for schema versioning and migrations.
 
 Later milestones can add asynchronous messaging and streaming after the REST path is understood.
 
@@ -108,7 +117,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Run the service
-python run.py
+python src/main.py
 ```
 
 The service will start on `http://localhost:8000` with API docs at `http://localhost:8000/docs`
@@ -129,33 +138,28 @@ The web interface will be available at `http://localhost:4200`
 
 ## Architecture Diagram
 
-```
-┌─────────────────────┐
-│   Angular Frontend  │
-│   (Port 4200)       │
-├─────────────────────┤
-│  Header Component   │
-│  Message List       │
-│  Message Modal      │
-└──────────┬──────────┘
-           │ HTTPS
-           │
-┌──────────▼────────────┐
-│  FastAPI Service      │
-│  (Port 8000)          │
-├───────────────────────┤
-│ POST /api/messages    │
-│ GET  /api/messages    │
-│ GET  /health          │
-└──────────┬────────────┘
-           │
-┌──────────▼────────────┐
-│  PostgreSQL Database  │
-│  (Port 5432)          │
-├───────────────────────┤
-│  messages table       │
-│  - id (PK)            │
-│  - text               │
-│  - created_at         │
-└───────────────────────┘
+```mermaid
+graph TD
+    subgraph Client
+        Angular[Angular Frontend<br/>Port 4200]
+    end
+
+    subgraph Server
+        FastAPI[FastAPI Service<br/>Port 8000]
+        subgraph Layers
+            Controller[Controller Layer]
+            Service[Service Layer]
+            DBLayer[Database Layer]
+            Controller --> Service
+            Service --> DBLayer
+        end
+        FastAPI --- Layers
+    end
+
+    subgraph Persistence
+        Postgres[(PostgreSQL Database<br/>Port 5432)]
+    end
+
+    Angular -- HTTPS --> Controller
+    DBLayer --> Postgres
 ```
